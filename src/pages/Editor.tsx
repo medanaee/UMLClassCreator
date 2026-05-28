@@ -27,21 +27,21 @@ export const Editor: React.FC = () => {
     }
 
     let css = `
-      @font-face { font-family: 'VazirmatnLocal'; src: url('./fonts/Vazirmatn/Vazirmatn-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-      @font-face { font-family: 'VazirmatnLocal'; src: url('./fonts/Vazirmatn/Vazirmatn-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
+      @font-face { font-family: 'VazirmatnLocal'; src: url('../fonts/Vazirmatn/Vazirmatn-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+      @font-face { font-family: 'VazirmatnLocal'; src: url('../fonts/Vazirmatn/Vazirmatn-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
       
-      @font-face { font-family: 'NewCMLocal'; src: url('./fonts/NewCM/NewCM10-Book.otf') format('opentype'); font-weight: normal; font-style: normal; }
-      @font-face { font-family: 'NewCMLocal'; src: url('./fonts/NewCM/NewCM10-Bold.otf') format('opentype'); font-weight: bold; font-style: normal; }
-      @font-face { font-family: 'NewCMLocal'; src: url('./fonts/NewCM/NewCM10-BookItalic.otf') format('opentype'); font-weight: normal; font-style: italic; }
-      @font-face { font-family: 'NewCMLocal'; src: url('./fonts/NewCM/NewCM10-BoldItalic.otf') format('opentype'); font-weight: bold; font-style: italic; }
+      @font-face { font-family: 'NewCMLocal'; src: url('../fonts/NewCM/NewCM10-Book.otf') format('opentype'); font-weight: normal; font-style: normal; }
+      @font-face { font-family: 'NewCMLocal'; src: url('../fonts/NewCM/NewCM10-Bold.otf') format('opentype'); font-weight: bold; font-style: normal; }
+      @font-face { font-family: 'NewCMLocal'; src: url('../fonts/NewCM/NewCM10-BookItalic.otf') format('opentype'); font-weight: normal; font-style: italic; }
+      @font-face { font-family: 'NewCMLocal'; src: url('../fonts/NewCM/NewCM10-BoldItalic.otf') format('opentype'); font-weight: bold; font-style: italic; }
 
-      @font-face { font-family: 'FiraLocal'; src: url('./fonts/Fira/FiraCode-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+      @font-face { font-family: 'FiraLocal'; src: url('../fonts/Fira/FiraCode-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
       @font-face { font-family: 'FiraLocal'; src: url('./fonts/Fira/FiraCode-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
-
-      @font-face { font-family: 'InterLocal'; src: url('./fonts/Inter/Inter_18pt-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-      @font-face { font-family: 'InterLocal'; src: url('./fonts/Inter/Inter_18pt-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
-      @font-face { font-family: 'InterLocal'; src: url('./fonts/Inter/Inter_18pt-Italic.ttf') format('truetype'); font-weight: normal; font-style: italic; }
-      @font-face { font-family: 'InterLocal'; src: url('./fonts/Inter/Inter_18pt-BoldItalic.ttf') format('truetype'); font-weight: bold; font-style: italic; }
+.
+      @font-face { font-family: 'InterLocal'; src: url('../fonts/Inter/Inter_18pt-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+      @font-face { font-family: 'InterLocal'; src: url('../fonts/Inter/Inter_18pt-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
+      @font-face { font-family: 'InterLocal'; src: url('../fonts/Inter/Inter_18pt-Italic.ttf') format('truetype'); font-weight: normal; font-style: italic; }
+      @font-face { font-family: 'InterLocal'; src: url('../fonts/Inter/Inter_18pt-BoldItalic.ttf') format('truetype'); font-weight: bold; font-style: italic; }
     `;
 
     (settings.customFonts || []).forEach(font => {
