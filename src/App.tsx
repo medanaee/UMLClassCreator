@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Auth } from './pages/Auth';
 import { Editor } from './pages/Editor';
+import { Projects } from './pages/Projects';
 import { useStore } from './store/useStore';
 import { supabase } from './supabaseClient';
 
@@ -44,8 +45,9 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={session ? <Navigate to="/editor" replace /> : <Auth />} />
-        <Route path="/editor" element={<Editor />} />
+        <Route path="/" element={session ? <Navigate to="/projects" replace /> : <Auth />} />
+        <Route path="/projects" element={session ? <Projects /> : <Navigate to="/" replace />} />
+        <Route path="/editor/:projectId?" element={<Editor />} />
       </Routes>
     </BrowserRouter>
   );
