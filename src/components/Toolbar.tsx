@@ -1,14 +1,18 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 import { useStore } from '../store/useStore';
-import { PlusSquare, FileText, ArrowRight, ArrowRightFromLine, MoreHorizontal, Layers, GripHorizontal, Camera, PanelLeft, PanelRight, Download, Upload, Minus, Type, Hexagon, Image as ImageIcon, Shapes, Square, Circle, Triangle, PenTool, Cloud } from 'lucide-react';
+import { PlusSquare, FileText, ArrowRight, ArrowRightFromLine, MoreHorizontal, Layers, GripHorizontal, Camera, PanelLeft, PanelRight, Download, Upload, Minus, Type, Hexagon, Image as ImageIcon, Shapes, Square, Circle, Triangle, PenTool, Cloud, Save, Loader2 } from 'lucide-react';
 import { domToPng } from 'modern-screenshot'
 
 
 export const Toolbar: React.FC = () => {
   const { addClass, addTextBox, addComment, startDrawingPolygon, isDrawingPolygon, setPendingArrowType, pendingArrowType, settings, selectElement, toggleLeftPanel, isLeftPanelOpen, toggleRightPanel, isRightPanelOpen, classes, arrows, loadProject, addImage, pendingItemType, setPendingItemType, setPendingImageData, pendingShapeType, setPendingShapeType } = useStore();
+  const { projectId } = useParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [isShapeMenuOpen, setIsShapeMenuOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const shapeMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -83,6 +87,51 @@ export const Toolbar: React.FC = () => {
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleCloudSave = async () => {
+    if (!projectId) return;
+    setIsSaving(true);
+    try {
+      const projectClasses = await Promise.all(classes.map(async (c) => {
+        if (c.type === 'image' && c.imageUrl?.startsWith('blob:')) {
+          try {
+            const res = await fetch(c.imageUrl);
+            const blob = await res.blob();
+            const base64 = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(blob);
+            });
+            return { ...c, imageUrl: base64 };
+          } catch (err) {
+            return c;
+          }
+        }
+        return c;
+      }));
+
+      const projectData = { classes: projectClasses, arrows };
+      const jsonString = JSON.stringify(projectData, null, 2);
+
+      // آپلود در استوریج سوپابیس
+      const { error: uploadError } = await supabase.storage.from('diagrams').upload(`${projectId}.json`, jsonString, {
+        contentType: 'application/json',
+        upsert: true
+      });
+      if (uploadError) throw uploadError;
+
+      // دریافت لینک عمومی و بروزرسانی رکورد پروژه
+      const { data: { publicUrl } } = supabase.storage.from('diagrams').getPublicUrl(`${projectId}.json`);
+      const { error: dbError } = await supabase.from('projects').update({ file_url: publicUrl }).eq('id', projectId);
+      if (dbError) throw dbError;
+
+    } catch (err) {
+      console.error(err);
+      alert('خطا در ذخیره‌سازی پروژه در فضای ابری.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleLoadProject = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -217,13 +266,22 @@ export const Toolbar: React.FC = () => {
 
       <div className="flex-grow"></div>
 
-      <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleLoadProject} />
-      <button onClick={() => fileInputRef.current?.click()} className={btnClass} title="Load Project">
-        <Upload size={16} /> Load Project
-      </button>
-      <button onClick={handleSaveProject} className={btnClass} title="Save Project">
-        <Download size={16} /> Save Project
-      </button>
+      {projectId ? (
+        <button onClick={handleCloudSave} disabled={isSaving} className={`flex items-center gap-2 px-4 py-2 cursor-pointer border rounded-md font-medium text-[13px] transition-all shadow-sm ${isSaving ? 'bg-slate-100 text-slate-400 border-slate-200' : 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600 hover:border-blue-600'}`}>
+          {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} 
+          {isSaving ? 'در حال ذخیره...' : 'Save to Cloud'}
+        </button>
+      ) : (
+        <>
+          <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleLoadProject} />
+          <button onClick={() => fileInputRef.current?.click()} className={btnClass} title="Load Project">
+            <Upload size={16} /> Load
+          </button>
+          <button onClick={handleSaveProject} className={btnClass} title="Save Project">
+            <Download size={16} /> Save Local
+          </button>
+        </>
+      )}
 
       <div className="w-[1px] bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
