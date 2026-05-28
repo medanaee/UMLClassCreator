@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../supabaseClient'; // Ensure supabase is imported
 import { useStore } from '../store/useStore';
 import { PlusSquare, FileText, ArrowRight, ArrowRightFromLine, MoreHorizontal, Layers, GripHorizontal, Camera, PanelLeft, PanelRight, Download, Upload, Minus, Type, Hexagon, Image as ImageIcon, Shapes, Square, Circle, Triangle, PenTool, Cloud, Save, Loader2 } from 'lucide-react';
 import { domToPng } from 'modern-screenshot'
@@ -90,7 +90,11 @@ export const Toolbar: React.FC = () => {
   };
 
   const handleCloudSave = async () => {
-    if (!projectId) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!projectId || !user) {
+      alert('برای ذخیره‌سازی ابری باید وارد حساب کاربری خود شوید و یک پروژه انتخاب کنید.');
+      return;
+    }
     setIsSaving(true);
     try {
       const projectClasses = await Promise.all(classes.map(async (c) => {
@@ -114,15 +118,17 @@ export const Toolbar: React.FC = () => {
       const projectData = { classes: projectClasses, arrows };
       const jsonString = JSON.stringify(projectData, null, 2);
 
+      const filePath = `${user.id}/${projectId}.json`; // مسیر جدید: user_id/projectId.json
+
       // آپلود در استوریج سوپابیس
-      const { error: uploadError } = await supabase.storage.from('diagrams').upload(`${projectId}.json`, jsonString, {
+      const { error: uploadError } = await supabase.storage.from('Diagrams').upload(filePath, jsonString, {
         contentType: 'application/json',
         upsert: true
       });
       if (uploadError) throw uploadError;
 
       // دریافت لینک عمومی و بروزرسانی رکورد پروژه
-      const { data: { publicUrl } } = supabase.storage.from('diagrams').getPublicUrl(`${projectId}.json`);
+      const { data: { publicUrl } } = supabase.storage.from('Diagrams').getPublicUrl(filePath);
       const { error: dbError } = await supabase.from('projects').update({ file_url: publicUrl }).eq('id', projectId);
       if (dbError) throw dbError;
 
