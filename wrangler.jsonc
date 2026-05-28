@@ -14,6 +14,8 @@
   ],
   "vars": {
     "SUPABASE_URL": "https://pdpzxyndnkkwxpqqiagd.supabase.co",
-    "SUPABASE_ANON_KEY": "sb_publishable_imrFpJx8yGtvJPXSiHjCow_e7_mxb-F"
+    "SUPABASE_ANON_KEY": "sb_publishable_imrFpJx8yGtvJPXSiHjCow_e7_mxb-F",
+    "VITE_VITE_SUPABASE_URL": "https://pdpzxyndnkkwxpqqiagd.supabase.co",
+    "VITE_VITE_SUPABASE_ANON_KEY": "sb_publishable_imrFpJx8yGtvJPXSiHjCow_e7_mxb-F"
   }
 }
