@@ -171,7 +171,7 @@ function App() {
       <RightPanel />
       <Canvas />
       <BottomToolbar />
-      
+      dcdscsdcvsdvsdvsd
       {/* Anchor overlays for debugging or visible snapping feedback could go here */}
     </div>
   );
