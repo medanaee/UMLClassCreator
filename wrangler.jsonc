@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "umlclass",
+  "main": "worker/index.ts",
   "compatibility_date": "2026-05-27",
   "observability": {
     "enabled": true
