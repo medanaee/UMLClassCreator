@@ -1,16 +1,14 @@
-import { useEffect, useRef } from 'react';
-import { Toolbar } from './components/Toolbar';
-import { Canvas } from './components/Canvas';
-import { LeftPanel } from './components/LeftPanel';
-import { RightPanel } from './components/RightPanel';
-import { BottomToolbar } from './components/BottomToolbar';
+import { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Auth } from './pages/Auth';
+import { Editor } from './pages/Editor';
 import { useStore } from './store/useStore';
-import type { ToolType } from './store/useStore';
+import { supabase } from './supabaseClient';
 
 function App() {
-  const { settings, setTool, deleteSelected, undo, redo } = useStore();
-  const prevToolRef = useRef<ToolType>('selection');
-  const isSpacePanningRef = useRef(false);
+  const { settings } = useStore();
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (settings.isDarkMode) {
@@ -21,159 +19,35 @@ function App() {
   }, [settings.isDarkMode]);
 
   useEffect(() => {
-    const styleId = 'custom-fonts-style';
-    let styleEl = document.getElementById(styleId) as HTMLStyleElement;
-    if (!styleEl) {
-      styleEl = document.createElement('style');
-      styleEl.id = styleId;
-      document.head.appendChild(styleEl);
-    }
-
-    // فونت‌های آفلاین کنار فایل HTML
-    let css = `
-      @font-face { font-family: 'VazirmatnLocal'; src: url('./fonts/Vazirmatn/Vazirmatn-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-      @font-face { font-family: 'VazirmatnLocal'; src: url('./fonts/Vazirmatn/Vazirmatn-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
-      
-      @font-face { font-family: 'NewCMLocal'; src: url('./fonts/NewCM/NewCM10-Book.otf') format('opentype'); font-weight: normal; font-style: normal; }
-      @font-face { font-family: 'NewCMLocal'; src: url('./fonts/NewCM/NewCM10-Bold.otf') format('opentype'); font-weight: bold; font-style: normal; }
-      @font-face { font-family: 'NewCMLocal'; src: url('./fonts/NewCM/NewCM10-BookItalic.otf') format('opentype'); font-weight: normal; font-style: italic; }
-      @font-face { font-family: 'NewCMLocal'; src: url('./fonts/NewCM/NewCM10-BoldItalic.otf') format('opentype'); font-weight: bold; font-style: italic; }
-
-      @font-face { font-family: 'FiraLocal'; src: url('./fonts/Fira/FiraCode-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-      @font-face { font-family: 'FiraLocal'; src: url('./fonts/Fira/FiraCode-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
-
-      @font-face { font-family: 'InterLocal'; src: url('./fonts/Inter/Inter_18pt-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-      @font-face { font-family: 'InterLocal'; src: url('./fonts/Inter/Inter_18pt-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
-      @font-face { font-family: 'InterLocal'; src: url('./fonts/Inter/Inter_18pt-Italic.ttf') format('truetype'); font-weight: normal; font-style: italic; }
-      @font-face { font-family: 'InterLocal'; src: url('./fonts/Inter/Inter_18pt-BoldItalic.ttf') format('truetype'); font-weight: bold; font-style: italic; }
-    `;
-
-    // فونت‌های آپلودشده توسط کاربر (در قالب Base64 URL)
-    (settings.customFonts || []).forEach(font => {
-      css += `\n@font-face { font-family: '${font.name}'; src: url('${font.url}'); }`;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
     });
 
-    styleEl.innerHTML = css;
-  }, [settings.customFonts]);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // جلوگیری از اجرا شدن کلیدهای میانبر هنگام تایپ کردن کاربر
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement).isContentEditable) {
-        return;
-      }
+    return () => subscription.unsubscribe();
+  }, []);
 
-      if (e.code === 'Space' && !e.repeat) {
-        e.preventDefault();
-        const currentTool = useStore.getState().tool;
-        if (currentTool !== 'hand') {
-          prevToolRef.current = currentTool;
-          isSpacePanningRef.current = true;
-          setTool('hand');
-        }
-        return;
-      }
-
-      // مدیریت میانبرهای Undo و Redo
-      if (e.ctrlKey || e.metaKey) {
-        if (e.key.toLowerCase() === 'z') {
-          if (e.shiftKey) {
-            redo();
-          } else {
-            undo();
-          }
-          e.preventDefault();
-          return;
-        }
-        if (e.key.toLowerCase() === 'y') {
-          redo();
-          e.preventDefault();
-          return;
-        }
-        if (e.key.toLowerCase() === 'c') {
-          useStore.getState().copySelected();
-          e.preventDefault();
-          return;
-        }
-        if (e.key.toLowerCase() === 'v') {
-          const state = useStore.getState();
-          const canvasEl = document.getElementById('canvas');
-          if (canvasEl) {
-            const bounds = canvasEl.getBoundingClientRect();
-            // پیست کردن دقیقاً در مرکز صفحه
-            const localX = (bounds.width / 2 - state.pan.x) / state.zoom;
-            const localY = (bounds.height / 2 - state.pan.y) / state.zoom;
-            state.pasteFromClipboard(localX, localY);
-          }
-          e.preventDefault();
-          return;
-        }
-        if (e.key.toLowerCase() === 'd') {
-          useStore.getState().duplicateSelected();
-          e.preventDefault();
-          return;
-        }
-        if (e.key.toLowerCase() === 'g') {
-          e.preventDefault();
-          const state = useStore.getState();
-          if (state.selectedIds.length === 0) return;
-          const selectedGroupIds = new Set<string>();
-          let hasUngroupedItems = false;
-          state.selectedIds.forEach(id => {
-              const c = state.classes.find(x => x.id === id);
-              const a = state.arrows.find(x => x.id === id);
-              const groupId = c?.groupId || a?.groupId;
-              if (groupId) selectedGroupIds.add(groupId);
-              else hasUngroupedItems = true;
-          });
-          let isFullGroupSelected = true;
-          if (selectedGroupIds.size > 0) {
-              selectedGroupIds.forEach(groupId => {
-                  const itemsInGroup = [...state.classes.filter(c => c.groupId === groupId).map(c => c.id), ...state.arrows.filter(a => a.groupId === groupId).map(a => a.id)];
-                  if (!itemsInGroup.every(id => state.selectedIds.includes(id))) isFullGroupSelected = false;
-              });
-          } else { isFullGroupSelected = false; }
-          const isAllSameGroup = selectedGroupIds.size === 1 && !hasUngroupedItems;
-          if (isAllSameGroup && isFullGroupSelected) state.ungroupSelected();
-          else if (state.selectedIds.length > 1) state.groupSelected();
-          return;
-        }
-      }
-
-      if (e.key.toLowerCase() === 'v') setTool('selection');
-      if (e.key.toLowerCase() === 'h') setTool('hand');
-      if (e.key.toLowerCase() === 'z') setTool('zoom');
-      if (e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
-    };
-
-      const handleKeyUp = (e: KeyboardEvent) => {
-        if (e.code === 'Space') {
-          e.preventDefault();
-          if (isSpacePanningRef.current) {
-            isSpacePanningRef.current = false;
-            setTool(prevToolRef.current);
-          }
-        }
-      };
-
-    window.addEventListener('keydown', handleKeyDown);
-      window.addEventListener('keyup', handleKeyUp);
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-      };
-  }, [setTool, deleteSelected, undo, redo]);
+  if (loading) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <span className="text-slate-500 font-medium animate-pulse">در حال بارگذاری...</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full h-screen overflow-hidden flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50 relative selection:bg-blue-500/20">
-      <Toolbar />
-      <LeftPanel />
-      <RightPanel />
-      <Canvas />
-      <BottomToolbar />
-      dcdscsdcvsdvsdvsd
-      {/* Anchor overlays for debugging or visible snapping feedback could go here */}
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={session ? <Navigate to="/editor" replace /> : <Auth />} />
+        <Route path="/editor" element={<Editor />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
