@@ -37,7 +37,7 @@ export const Editor: React.FC = () => {
 
       @font-face { font-family: 'FiraLocal'; src: url('../fonts/Fira/FiraCode-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
       @font-face { font-family: 'FiraLocal'; src: url('./fonts/Fira/FiraCode-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
-.
+
       @font-face { font-family: 'InterLocal'; src: url('../fonts/Inter/Inter_18pt-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
       @font-face { font-family: 'InterLocal'; src: url('../fonts/Inter/Inter_18pt-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
       @font-face { font-family: 'InterLocal'; src: url('../fonts/Inter/Inter_18pt-Italic.ttf') format('truetype'); font-weight: normal; font-style: italic; }
