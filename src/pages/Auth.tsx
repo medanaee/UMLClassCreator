@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { Hexagon, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { useStore } from '../store/useStore';
 
 export const Auth: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ export const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { showAlert } = useStore();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +26,7 @@ export const Auth: React.FC = () => {
       } else {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        alert('Registration successful. You can now log in (or check your email for a verification link if required).');
+        showAlert('Registration successful. You can now log in.', 'success');
         setIsLogin(true);
       }
     } catch (err: any) {

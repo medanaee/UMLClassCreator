@@ -3,8 +3,11 @@ import { useStore } from '../store/useStore';
 import { getRoundedPolygonString } from '../store/utils'
 import type { UmlClassType } from '../store/types';
 import { X, GripVertical, Star, Zap, Shield, CheckCircle, AlertTriangle, Info } from 'lucide-react';
-import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import remarkGfm from 'remark-gfm';
 
 interface UmlClassProps {
   cls: UmlClassType;
@@ -180,36 +183,6 @@ export const UmlClass: React.FC<UmlClassProps> = ({ cls }) => {
         targetId: cls.id
       });
     }
-  };
-
-  // Basic Markdown Parser
-  const renderMarkdown = (text: string) => {
-    let html = text
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/^---+\s*$/gim, '<hr class="my-2 p-0 m-0 border-black/20 dark:border-white/20" />')
-      .replace(/^### ([^\r\n]*)/gim, '<div class="text-lg font-bold mt-1 inline-block w-full">$1</div>')
-      .replace(/^## ([^\r\n]*)/gim, '<div class="text-xl font-bold mt-2 mb-1 border-b border-black/10 dark:border-white/20 pb-1 inline-block w-full">$1</div>')
-      .replace(/^# ([^\r\n]*)/gim, '<div class="text-2xl font-bold mt-2 mb-2 border-b-1 border-black/10 dark:border-white/20 pb-1 inline-block w-full">$1</div>')
-      .replace(/`(.*?)`/g, '<code class="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded font-mono">$1</code>')
-      .replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
-        try {
-          const unescaped = math.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-          return katex.renderToString(unescaped, { displayMode: true, throwOnError: false });
-        } catch (e) { return match; }
-      })
-      .replace(/\$([\s\S]*?)\$/g, (match, math) => {
-        try {
-          const unescaped = math.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-          return katex.renderToString(unescaped, { displayMode: false, throwOnError: false });
-        } catch (e) { return match; }
-      })
-      .replace(/(?<!\\)\*\*(.*?)(?<!\\)\*\*/g, '<strong>$1</strong>')
-      .replace(/(?<!\\)\*(.*?)(?<!\\)\*/g, '<em>$1</em>')
-      .replace(/\\\*/g, '*')
-      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="text-blue-500 hover:underline" rel="noopener noreferrer">$1</a>')
-      .replace(/(<\/div>| \/>|<\/span>)\s*\r?\n/g, '$1')
-      .replace(/\n/g, '<br>');
-    return html;
   };
 
   // Color Themes
@@ -491,6 +464,7 @@ export const UmlClass: React.FC<UmlClassProps> = ({ cls }) => {
         }),
         transform: `rotate(${cls.rotation || 0}deg)`
       }}
+      dir={settings.isRTL ? 'rtl' : 'ltr'}
     >
       {isSelected && selectedIds.length === 1 && !isTextBox && !isClassType && (
         <div onMouseDown={handleRotateStart} className="absolute left-1/2 -top-8 w-6 h-6 -translate-x-1/2 cursor-crosshair flex flex-col items-center justify-center z-20 pointer-events-auto group">
@@ -521,7 +495,7 @@ export const UmlClass: React.FC<UmlClassProps> = ({ cls }) => {
           onChange={(e) => updateClass(cls.id, { name: e.target.value })}
           onFocus={() => { if (!selectedIds.includes(cls.id)) selectElement(cls.id); }}
           onBlur={() => commitHistory()}
-          className="font-semibold border border-transparent bg-transparent flex-grow text-sm outline-none text-left px-1 py-0.5 rounded text-slate-900 dark:text-slate-50 w-full box-border focus:bg-white dark:focus:bg-slate-950 focus:border-blue-500 transition-colors"
+          className="font-semibold border border-transparent bg-transparent flex-grow text-sm outline-none text-start px-1 py-0.5 rounded text-slate-900 dark:text-slate-50 w-full box-border focus:bg-white dark:focus:bg-slate-950 focus:border-blue-500 transition-colors"
         />
       </div>
       )}
@@ -552,7 +526,7 @@ export const UmlClass: React.FC<UmlClassProps> = ({ cls }) => {
             style={{ 
               fontSize: (isComment ? (cls.fontSize || 14) : 13.5) * (settings.fontFamily === 'NewCMLocal' ? 1.3 : 1),
               lineHeight: settings.fontFamily === 'NewCMLocal' ? '1.3' : '1.625',
-              textAlign: cls.textAlign || 'left'
+              textAlign: cls.textAlign || (settings.isRTL ? 'right' : 'left')
             }}
           >
             {isEditingText ? (
@@ -567,7 +541,7 @@ export const UmlClass: React.FC<UmlClassProps> = ({ cls }) => {
                     }
                   }
                 }}
-                  style={{ textAlign: cls.textAlign || 'left', lineHeight: 'inherit' }}
+                  style={{ textAlign: cls.textAlign || (settings.isRTL ? 'right' : 'left'), lineHeight: 'inherit' }}
                   className={`outline-none resize-none rounded overflow-hidden ${isComment ? 'whitespace-pre bg-transparent border-transparent focus:ring-0 p-0' : 'w-full bg-white dark:bg-slate-900 border border-blue-500 focus:ring-2 focus:ring-blue-500/20 p-1.5'}`}
                 value={cls.content || ''}
                 rows={1}
@@ -579,10 +553,38 @@ export const UmlClass: React.FC<UmlClassProps> = ({ cls }) => {
               />
             ) : (
               <div 
-                className={`w-full h-full text-black ${(color === 'yellow' && isTextBox) ? 'dark:text-black': 'dark:text-white'} ${isComment ? '' : 'whitespace-pre-wrap'} ${!isComment ? 'p-1' : ''}`}
-                style={{ textAlign: cls.textAlign || 'left', lineHeight: 'inherit' }}
-                dangerouslySetInnerHTML={{ __html: renderMarkdown(cls.content || '') || '<span class="text-slate-400 italic">Double click to edit...</span>' }}
-              />
+                className={`w-full h-full text-black ${(color === 'yellow' && isTextBox) ? 'dark:text-black': 'dark:text-white'} ${isComment ? '' : ''} ${!isComment ? 'p-1' : ''}`}
+                style={{ textAlign: cls.textAlign || (settings.isRTL ? 'right' : 'left'), lineHeight: 'inherit' }}
+              >
+                {cls.content ? (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkMath, remarkGfm]}
+                    rehypePlugins={[rehypeKatex]}
+                    components={{
+                      h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-2 mb-2 border-b border-black/10 dark:border-white/20 pb-1 w-full" {...props} />,
+                      h2: ({node, ...props}) => <h2 className="text-xl font-bold mt-2 mb-1 border-b border-black/10 dark:border-white/20 pb-1 w-full" {...props} />,
+                      h3: ({node, ...props}) => <h3 className="text-lg font-bold mt-1 w-full" {...props} />,
+                      hr: ({node, ...props}) => <hr className="my-2 p-0 m-0 border-black/20 dark:border-white/20" {...props} />,
+                      a: ({node, ...props}) => <a className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                      p: ({node, ...props}) => <p className="mb-1 min-h-[1rem]" {...props} />,
+                      blockquote: ({node, ...props}) => <blockquote className={`my-2 py-1 px-3 bg-black/5 dark:bg-white/5 italic ${settings.isRTL ? 'border-r-4 border-black/20 dark:border-white/20' : 'border-l-4 border-black/20 dark:border-white/20'}`} {...props} />,
+                      ul: ({node, ...props}) => <ul className={`list-disc mb-1 ${settings.isRTL ? 'pr-5' : 'pl-5'}`} {...props} />,
+                      ol: ({node, ...props}) => <ol className={`list-decimal mb-1 ${settings.isRTL ? 'pr-5' : 'pl-5'}`} {...props} />,
+                      table: ({node, ...props}) => <table className="border-collapse border border-black/20 dark:border-white/20 my-2 w-full text-sm" {...props} />,
+                      th: ({node, ...props}) => <th className="border border-black/20 dark:border-white/20 px-2 py-1 bg-black/5 dark:bg-white/5" {...props} />,
+                      td: ({node, ...props}) => <td className="border border-black/20 dark:border-white/20 px-2 py-1" {...props} />,
+                      code: ({node, className, children, ...props}: any) => {
+                        const isInline = !className || !className.includes('language-');
+                        return <code dir="ltr" style={{ unicodeBidi: 'isolate' }} className={`${isInline ? 'bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded font-mono text-[0.9em]' : 'block bg-black/10 dark:bg-white/10 p-2 rounded font-mono whitespace-pre overflow-x-auto text-[0.9em] my-1 text-left'}`} {...props}>{children}</code>;
+                      }
+                    }}
+                  >
+                    {cls.content}
+                  </ReactMarkdown>
+                ) : (
+                  <span className="text-slate-400 italic">Double click to edit...</span>
+                )}
+              </div>
             )}
           </div>
         ) : (

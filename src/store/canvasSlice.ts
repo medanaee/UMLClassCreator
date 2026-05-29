@@ -17,6 +17,7 @@ export const createCanvasSlice: StateCreator<
   settings: {
     isDarkMode: savedSettings.isDarkMode ?? false,
     isSnappingEnabled: savedSettings.isSnappingEnabled ?? true,
+    isRTL: savedSettings.isRTL ?? false,
     groupAlignmentMode: savedSettings.groupAlignmentMode ?? 'separate',
     gridType: savedSettings.gridType ?? 'dot',
     exportScale: savedSettings.exportScale ?? 4,

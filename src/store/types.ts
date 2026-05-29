@@ -117,12 +117,19 @@ export interface ContextMenuState {
 export interface Settings {
   isDarkMode: boolean;
   isSnappingEnabled: boolean;
+  isRTL: boolean;
   groupAlignmentMode: 'separate' | 'together';
   gridType: 'dot' | 'grid' | 'none';
   exportScale: number;
   exportTransparent: boolean;
   fontFamily: string;
   customFonts: { name: string, url: string }[];
+}
+
+export interface AlertState {
+  message: string;
+  type: 'success' | 'error' | 'info';
+  id: number;
 }
 
 export interface HistorySnapshot {
@@ -237,6 +244,10 @@ export interface AppState extends HistorySlice, CanvasSlice, ElementSlice, Arrow
   contextMenu: ContextMenuState | null;
   clipboard: ClipboardData | null;
   alignKeyId: string | null;
+  
+  alert: AlertState | null;
+  showAlert: (message: string, type?: 'success' | 'error' | 'info') => void;
+  hideAlert: () => void;
 
   loadProject: (data: string) => void;
 }

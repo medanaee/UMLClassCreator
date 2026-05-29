@@ -4,6 +4,7 @@ import { Auth } from './pages/Auth';
 import { Editor } from './pages/Editor';
 import { Projects } from './pages/Projects';
 import { useStore } from './store/useStore';
+import { AlertToast } from './components/AlertToast';
 import { supabase } from './supabaseClient';
 
 function App() {
@@ -30,6 +31,8 @@ function App() {
 
     let css = `
       body, .font-sans { font-family: 'InterLocal', sans-serif !important; }
+      .katex, .katex-display { direction: ltr !important; unicode-bidi: isolate; }
+      
       @font-face { font-family: 'VazirmatnLocal'; src: url('/fonts/Vazirmatn/Vazirmatn-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
       @font-face { font-family: 'VazirmatnLocal'; src: url('/fonts/Vazirmatn/Vazirmatn-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
       
@@ -78,13 +81,16 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={session ? <Navigate to="/projects" replace /> : <Auth />} />
-        <Route path="/projects" element={session ? <Projects /> : <Navigate to="/" replace />} />
-        <Route path="/editor/:projectId?" element={<Editor />} />
-      </Routes>
-    </BrowserRouter>
+    <>
+      <AlertToast />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={session ? <Navigate to="/projects" replace /> : <Auth />} />
+          <Route path="/projects" element={session ? <Projects /> : <Navigate to="/" replace />} />
+          <Route path="/editor/:projectId?" element={<Editor />} />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 

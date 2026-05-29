@@ -168,6 +168,16 @@ export const LeftPanel: React.FC = () => {
               />
             </div>
 
+            <div className="flex items-center justify-between text-sm p-2 rounded-lg bg-slate-100 dark:bg-slate-700/50 mt-2">
+              <label className="font-medium text-slate-700 dark:text-slate-300">
+                Right-to-Left (RTL)
+              </label>
+              <ToggleSwitch 
+                checked={settings.isRTL} 
+                onChange={() => setSettings({ isRTL: !settings.isRTL })} 
+              />
+            </div>
+
             <div className="flex flex-col gap-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-700/50">
               <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Font Family</label>
               <select

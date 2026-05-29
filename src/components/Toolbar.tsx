@@ -7,7 +7,7 @@ import { domToPng } from 'modern-screenshot'
 
 
 export const Toolbar: React.FC = () => {
-  const { addClass, addTextBox, addComment, startDrawingPolygon, isDrawingPolygon, setPendingArrowType, pendingArrowType, settings, selectElement, toggleLeftPanel, isLeftPanelOpen, toggleRightPanel, isRightPanelOpen, classes, arrows, loadProject, addImage, pendingItemType, setPendingItemType, setPendingImageData, pendingShapeType, setPendingShapeType } = useStore();
+  const { addClass, addTextBox, addComment, startDrawingPolygon, isDrawingPolygon, setPendingArrowType, pendingArrowType, settings, selectElement, toggleLeftPanel, isLeftPanelOpen, toggleRightPanel, isRightPanelOpen, classes, arrows, loadProject, addImage, pendingItemType, setPendingItemType, setPendingImageData, pendingShapeType, setPendingShapeType, showAlert } = useStore();
   const { projectId } = useParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -48,7 +48,7 @@ export const Toolbar: React.FC = () => {
           link.click();
         }).catch(err => {
           console.error('Export failed:', err);
-          alert('An error occurred during export.');
+        showAlert('An error occurred during export.', 'error');
         }).finally(() => {
           if (settings.exportTransparent) {
             canvasEl.style.backgroundImage = originalBgImage;
@@ -92,7 +92,7 @@ export const Toolbar: React.FC = () => {
   const handleCloudSave = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!projectId || !user) {
-      alert('You must be logged in and have selected a project to save to the cloud.');
+      showAlert('You must be logged in and have selected a project to save to the cloud.', 'error');
       return;
     }
     setIsSaving(true);
@@ -164,9 +164,10 @@ export const Toolbar: React.FC = () => {
       const { error: dbError } = await supabase.from('projects').update(updateData).eq('id', projectId);
       if (dbError) throw dbError;
 
+      showAlert('Project saved to cloud successfully.', 'success');
     } catch (err) {
       console.error(err);
-      alert('Failed to save project to the cloud.');
+      showAlert('Failed to save project to the cloud.', 'error');
     } finally {
       setIsSaving(false);
     }

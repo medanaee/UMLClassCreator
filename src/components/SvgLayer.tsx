@@ -35,7 +35,7 @@ const THEME_COLORS = [
 ];
 
 export const SvgLayer: React.FC = () => {
-  const { arrows, selectedIds, selectElement, startDrag, deleteArrow, updateArrow, classes, openContextMenu, commitHistory } = useStore();
+  const { arrows, selectedIds, selectElement, startDrag, deleteArrow, updateArrow, classes, openContextMenu, commitHistory, settings } = useStore();
 
   const handleDragSegment = (e: React.MouseEvent, arrow: UmlArrowType, segmentIndex: number) => {
     if (e.button !== 0) return;
@@ -296,6 +296,7 @@ export const SvgLayer: React.FC = () => {
                         transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
                         fontSize: `${fontSize}px`
                     }}
+                    dir={settings.isRTL ? 'rtl' : 'ltr'}
                 >
                     {(val === '' && isSelected && labelKey === 'middleLabel') ? '[text]' : val}
                 </div>

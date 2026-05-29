@@ -23,6 +23,10 @@ export const useStore = create<AppState>((set, get, api) => ({
   contextMenu: null,
   clipboard: null,
   alignKeyId: null,
+  
+  alert: null,
+  showAlert: (message, type = 'info') => set({ alert: { message, type, id: Date.now() } }),
+  hideAlert: () => set({ alert: null }),
 
   loadProject: (data) => set((state) => {
     try {
@@ -50,11 +54,11 @@ export const useStore = create<AppState>((set, get, api) => ({
           future: []
         };
       } else {
-      alert('Invalid file format.');
+      get().showAlert('Invalid file format.', 'error');
       }
     } catch (err) {
       console.error(err);
-    alert('Error reading file.');
+    get().showAlert('Error reading file.', 'error');
     }
     return state;
   }),
