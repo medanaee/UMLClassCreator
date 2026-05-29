@@ -2,8 +2,9 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient'; // Ensure supabase is imported
 import { useStore } from '../store/useStore';
-import { PlusSquare, FileText, ArrowRight, ArrowRightFromLine, MoreHorizontal, Layers, GripHorizontal, Camera, PanelLeft, PanelRight, Download, Upload, Minus, Type, Hexagon, Image as ImageIcon, Shapes, Square, Circle, Triangle, PenTool, Cloud, Save, Loader2 } from 'lucide-react';
+import { PlusSquare, FileText, ArrowRight, ArrowRightFromLine, MoreHorizontal, Layers, GripHorizontal, Camera, PanelLeft, PanelRight, Download, Upload, Minus, Type, Hexagon, Image as ImageIcon, Shapes, Square, Circle, Triangle, PenTool, Cloud, Save, Loader2, HelpCircle } from 'lucide-react';
 import { domToPng } from 'modern-screenshot'
+import { HelpModal } from './HelpModal';
 
 
 export const Toolbar: React.FC = () => {
@@ -13,6 +14,7 @@ export const Toolbar: React.FC = () => {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [isShapeMenuOpen, setIsShapeMenuOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const shapeMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -330,9 +332,18 @@ export const Toolbar: React.FC = () => {
 
       <div className="w-[1px] bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
+      <button onClick={() => setIsHelpOpen(true)} className={btnClass} title="Help & Shortcuts">
+        <HelpCircle size={16} />
+      </button>
+
+      <div className="w-[1px] bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
       <button onClick={toggleRightPanel} className={`${btnClass} ${isRightPanelOpen ? 'bg-slate-100 dark:bg-slate-700' : ''}`} title="Toggle Properties Panel">
         <PanelRight size={16} />
       </button>
+
+      {/* Help Modal */}
+      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
     </div>
   );
 };
