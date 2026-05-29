@@ -25,7 +25,15 @@ export const createDragSlice: StateCreator<
                 if (idsToMove.includes(c.id)) initialPositions[c.id] = { type: 'class', x: c.x, y: c.y };
             });
             state.arrows.forEach(a => {
-                if (idsToMove.includes(a.id)) initialPositions[a.id] = { type: 'arrow-body', start: a.start, controlPoints: a.controlPoints || [], end: a.end };
+                if (idsToMove.includes(a.id)) {
+                    initialPositions[a.id] = { type: 'arrow-body', start: a.start, controlPoints: a.controlPoints || [], end: a.end };
+                } else if (
+                    (updates.type === 'class' || updates.type === 'selection-group') &&
+                    ((a.start.attachedTo && idsToMove.includes(a.start.attachedTo)) ||
+                     (a.end.attachedTo && idsToMove.includes(a.end.attachedTo)))
+                ) {
+                    initialPositions[a.id] = { type: 'attached-arrow', controlPoints: a.controlPoints || [] };
+                }
             });
         } else if (updates.type === 'label') {
             initialPositions[updates.targetId!] = updates.initialPositions?.[updates.targetId!] || {};
@@ -178,6 +186,34 @@ export const createDragSlice: StateCreator<
                             end: initPos.end.attachedTo ? { ...initPos.end } : { ...initPos.end, x: initPos.end.x + deltaXFinal, y: initPos.end.y + deltaYFinal, attachedTo: null, anchorIndex: -1 }
                         };
                     }
+
+                    if (initialPositions?.[a.id]?.type === 'attached-arrow') {
+                        const initPos = initialPositions[a.id];
+                        if (initPos.controlPoints && initPos.controlPoints.length >= 2) {
+                            const startMoving = a.start.attachedTo && moveIds.includes(a.start.attachedTo);
+                            const endMoving = a.end.attachedTo && moveIds.includes(a.end.attachedTo);
+                            
+                            let newCps = initPos.controlPoints.map((cp: Point) => ({ ...cp }));
+                            let changed = false;
+
+                            if (startMoving) {
+                                newCps[0].x = initPos.controlPoints[0].x + deltaXFinal;
+                                newCps[0].y = initPos.controlPoints[0].y + deltaYFinal;
+                                changed = true;
+                            }
+                            if (endMoving) {
+                                const lastIdx = newCps.length - 1;
+                                newCps[lastIdx].x = initPos.controlPoints[lastIdx].x + deltaXFinal;
+                                newCps[lastIdx].y = initPos.controlPoints[lastIdx].y + deltaYFinal;
+                                changed = true;
+                            }
+
+                            if (changed) {
+                                return { ...a, controlPoints: newCps };
+                            }
+                        }
+                    }
+
                     return a;
                 }),
                 snapLines: activeSnapLines
