@@ -30,7 +30,7 @@ export const BottomToolbar: React.FC = () => {
   };
 
   return (
-    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/70 dark:bg-slate-800/70 backdrop-blur p-1.5 rounded-xl shadow-xl shadow-slate-900/5 border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 z-[100]">
+    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/70 dark:bg-slate-800/70 backdrop-blur p-1.5 rounded-xl shadow-xl shadow-slate-900/5 border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 z-[90]">
       <button 
         onClick={() => setTool('selection')}
         className={btnClass(tool === 'selection')}

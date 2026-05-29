@@ -6,7 +6,6 @@ export const ContextMenu: React.FC = () => {
   const { contextMenu, closeContextMenu, copySelected, duplicateSelected, pasteFromClipboard, deleteSelected, deleteArrow, updateArrow, updateClass, clipboard, zoom, pan, arrows, selectedIds, classes, setEditingPolygonId, groupSelected, ungroupSelected, removeFromGroup, deletePolygonVertex, addPolygonVertexToEdge, commitHistory } = useStore();
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // بستن منو با کلیک بیرون از آن
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {

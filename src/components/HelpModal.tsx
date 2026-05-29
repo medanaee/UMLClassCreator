@@ -47,12 +47,16 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               { label: 'Hand / Pan Tool', key: 'H' },
               { label: 'Zoom Tool', key: 'Z' },
               { label: 'Temporary Pan', key: 'Hold Space' },
+              { label: 'Pan Up / Down', key: 'Scroll' },
+              { label: 'Pan Left / Right', key: 'Shift + Scroll' },
+              { label: 'Zoom In / Out', key: 'Ctrl + Scroll' },
               { label: 'Copy / Paste', key: 'Ctrl + C / V' },
               { label: 'Duplicate', key: 'Ctrl + D' },
               { label: 'Group / Ungroup', key: 'Ctrl + G' },
               { label: 'Undo / Redo', key: 'Ctrl + Z / Y' },
               { label: 'Multi-Select', key: 'Ctrl + Click' },
               { label: 'Delete Item', key: 'Del / Backspace' },
+              { label: 'Maintain Ratio / Snap Angle', key: 'Hold Shift' },
             ].map((shortcut, idx) => (
               <div key={idx} className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 p-2 rounded border border-slate-100 dark:border-slate-700/50">
                 <span className="font-medium">{shortcut.label}</span> 

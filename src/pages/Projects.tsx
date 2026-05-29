@@ -216,7 +216,7 @@ export const Projects: React.FC = () => {
         title="New Project"
       >
         <form onSubmit={handleCreateProject} className="p-5 flex flex-col gap-4">
-          <input type="text" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} placeholder="Project Name (e.g., E-commerce System)..." className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" autoFocus required />
+          <input type="text" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} placeholder="Project Name (e.g., E-commerce System)..." className="text-black dark:text-white w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" autoFocus required />
           
           <div className="flex flex-col gap-2">
             <label className="text-xs font-bold text-slate-500 uppercase">Upload JSON File (Optional)</label>
@@ -268,7 +268,7 @@ export const Projects: React.FC = () => {
             value={editingProjectName}
             onChange={(e) => setEditingProjectName(e.target.value)}
             placeholder="New Project Name..."
-            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+            className="text-black dark:text-white w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
             autoFocus
             required
           />

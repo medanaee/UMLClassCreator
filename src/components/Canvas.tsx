@@ -136,6 +136,38 @@ export const Canvas: React.FC = () => {
     return () => window.removeEventListener('keydown', handleEsc);
   }, [pendingArrowType, setPendingArrowType, editingPolygonId, setEditingPolygonId, pendingItemType, setPendingItemType, setPendingImageData]);
 
+  useEffect(() => {
+    const canvasEl = canvasRef.current;
+    if (!canvasEl) return;
+
+    const handleNativeWheel = (e: WheelEvent) => {
+      const state = useStore.getState();
+      if (e.ctrlKey || e.metaKey || state.tool === 'zoom') {
+        e.preventDefault();
+        const bounds = canvasEl.getBoundingClientRect();
+        const screenX = e.clientX - bounds.left;
+        const screenY = e.clientY - bounds.top;
+        const localX = (screenX - state.pan.x) / state.zoom;
+        const localY = (screenY - state.pan.y) / state.zoom;
+        const zoomDelta = e.deltaY > 0 ? -0.1 : 0.1;
+        const newZoom = Math.max(0.1, Math.min(state.zoom + zoomDelta, 3));
+        state.setZoom(newZoom);
+        state.setPan({ x: screenX - localX * newZoom, y: screenY - localY * newZoom });
+      } else {
+        let dx = e.deltaX;
+        let dy = e.deltaY;
+        if (e.shiftKey && dx === 0) {
+          dx = dy;
+          dy = 0;
+        }
+        state.setPan({ x: state.pan.x - dx, y: state.pan.y - dy });
+      }
+    };
+
+    canvasEl.addEventListener('wheel', handleNativeWheel, { passive: false });
+    return () => canvasEl.removeEventListener('wheel', handleNativeWheel);
+  }, []);
+
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
     
@@ -260,23 +292,6 @@ export const Canvas: React.FC = () => {
     }
   };
 
-  const handleWheel = (e: React.WheelEvent) => {
-    if (e.ctrlKey || e.metaKey || tool === 'zoom') {
-      e.preventDefault();
-      const bounds = canvasRef.current!.getBoundingClientRect();
-      const screenX = e.clientX - bounds.left;
-      const screenY = e.clientY - bounds.top;
-      const localX = (screenX - pan.x) / zoom;
-      const localY = (screenY - pan.y) / zoom;
-      const zoomDelta = e.deltaY > 0 ? -0.1 : 0.1;
-      const newZoom = Math.max(0.1, Math.min(zoom + zoomDelta, 3));
-      setZoom(newZoom);
-      setPan({ x: screenX - localX * newZoom, y: screenY - localY * newZoom });
-    } else {
-      setPan(prev => ({ x: prev.x - e.deltaX, y: prev.y - e.deltaY }));
-    }
-  };
-
   let cursorClass = '';
   if (tool === 'hand') cursorClass = 'cursor-grab active:cursor-grabbing';
   if (tool === 'zoom') cursorClass = altPressed ? 'cursor-zoom-out' : 'cursor-zoom-in';
@@ -294,7 +309,6 @@ export const Canvas: React.FC = () => {
       ref={canvasRef}
       onMouseDown={handleCanvasMouseDown}
       onContextMenu={handleContextMenu}
-      onWheel={handleWheel}
       className={`absolute top-[65px] bottom-0 overflow-hidden ${cursorClass} ${gridBgClass} transition-[left,right] duration-300 ${isLeftPanelOpen ? 'left-64' : 'left-0'} ${isRightPanelOpen ? 'right-64' : 'right-0'}`}
       style={{
         backgroundSize: `${20 * zoom}px ${20 * zoom}px`,

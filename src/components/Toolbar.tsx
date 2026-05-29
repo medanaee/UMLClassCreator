@@ -128,7 +128,7 @@ export const Toolbar: React.FC = () => {
         const canvasEl = document.getElementById('canvas');
         if (canvasEl) {
           const dataUrl = await domToPng(canvasEl, {
-            scale: 0.2, // مقیاس کوچک برای کاهش حجم و افزایش سرعت
+            scale: 0.5, // مقیاس کوچک برای کاهش حجم و افزایش سرعت
             backgroundColor: settings.isDarkMode ? '#0f172a' : '#f8fafc'
           });
           
