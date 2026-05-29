@@ -18,40 +18,6 @@ export const Editor: React.FC = () => {
   const [isLoading, setIsLoading] = useState(!!projectId);
 
   useEffect(() => {
-    const styleId = 'custom-fonts-style';
-    let styleEl = document.getElementById(styleId) as HTMLStyleElement;
-    if (!styleEl) {
-      styleEl = document.createElement('style');
-      styleEl.id = styleId;
-      document.head.appendChild(styleEl);
-    }
-
-    let css = `
-      @font-face { font-family: 'VazirmatnLocal'; src: url('../fonts/Vazirmatn/Vazirmatn-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-      @font-face { font-family: 'VazirmatnLocal'; src: url('../fonts/Vazirmatn/Vazirmatn-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
-      
-      @font-face { font-family: 'NewCMLocal'; src: url('../fonts/NewCM/NewCM10-Book.otf') format('opentype'); font-weight: normal; font-style: normal; }
-      @font-face { font-family: 'NewCMLocal'; src: url('../fonts/NewCM/NewCM10-Bold.otf') format('opentype'); font-weight: bold; font-style: normal; }
-      @font-face { font-family: 'NewCMLocal'; src: url('../fonts/NewCM/NewCM10-BookItalic.otf') format('opentype'); font-weight: normal; font-style: italic; }
-      @font-face { font-family: 'NewCMLocal'; src: url('../fonts/NewCM/NewCM10-BoldItalic.otf') format('opentype'); font-weight: bold; font-style: italic; }
-
-      @font-face { font-family: 'FiraLocal'; src: url('../fonts/Fira/FiraCode-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-      @font-face { font-family: 'FiraLocal'; src: url('./fonts/Fira/FiraCode-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
-
-      @font-face { font-family: 'InterLocal'; src: url('../fonts/Inter/Inter_18pt-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-      @font-face { font-family: 'InterLocal'; src: url('../fonts/Inter/Inter_18pt-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
-      @font-face { font-family: 'InterLocal'; src: url('../fonts/Inter/Inter_18pt-Italic.ttf') format('truetype'); font-weight: normal; font-style: italic; }
-      @font-face { font-family: 'InterLocal'; src: url('../fonts/Inter/Inter_18pt-BoldItalic.ttf') format('truetype'); font-weight: bold; font-style: italic; }
-    `;
-
-    (settings.customFonts || []).forEach(font => {
-      css += `\n@font-face { font-family: '${font.name}'; src: url('${font.url}'); }`;
-    });
-
-    styleEl.innerHTML = css;
-  }, [settings.customFonts]);
-
-  useEffect(() => {
     const fetchProjectData = async () => {
       if (!projectId) return;
       try {
@@ -180,7 +146,7 @@ export const Editor: React.FC = () => {
     return (
       <div className="w-full h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 text-slate-500">
         <Loader2 size={32} className="animate-spin mb-4 text-blue-500" />
-        <p className="font-medium">در حال بارگذاری دیاگرام...</p>
+        <p className="font-medium">Loading diagram...</p>
       </div>
     );
   }

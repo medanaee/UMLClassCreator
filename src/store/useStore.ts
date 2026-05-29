@@ -50,11 +50,11 @@ export const useStore = create<AppState>((set, get, api) => ({
           future: []
         };
       } else {
-        alert('فرمت فایل نامعتبر است.');
+      alert('Invalid file format.');
       }
     } catch (err) {
       console.error(err);
-      alert('خطا در خواندن فایل.');
+    alert('Error reading file.');
     }
     return state;
   }),

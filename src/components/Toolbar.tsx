@@ -48,7 +48,7 @@ export const Toolbar: React.FC = () => {
           link.click();
         }).catch(err => {
           console.error('Export failed:', err);
-          alert('مشکلی در خروجی گرفتن پیش آمد.');
+          alert('An error occurred during export.');
         }).finally(() => {
           if (settings.exportTransparent) {
             canvasEl.style.backgroundImage = originalBgImage;
@@ -92,7 +92,7 @@ export const Toolbar: React.FC = () => {
   const handleCloudSave = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!projectId || !user) {
-      alert('برای ذخیره‌سازی ابری باید وارد حساب کاربری خود شوید و یک پروژه انتخاب کنید.');
+      alert('You must be logged in and have selected a project to save to the cloud.');
       return;
     }
     setIsSaving(true);
@@ -120,6 +120,36 @@ export const Toolbar: React.FC = () => {
 
       const filePath = `${user.id}/${projectId}.json`; // مسیر جدید: user_id/projectId.json
 
+      // ساخت و آپلود تصویر بندانگشتی (Thumbnail)
+      let thumbUrl = null;
+      try {
+        const canvasEl = document.getElementById('canvas');
+        if (canvasEl) {
+          const dataUrl = await domToPng(canvasEl, {
+            scale: 0.2, // مقیاس کوچک برای کاهش حجم و افزایش سرعت
+            backgroundColor: settings.isDarkMode ? '#0f172a' : '#f8fafc'
+          });
+          
+          // تبدیل امن Base64 به Blob
+          const arr = dataUrl.split(',');
+          const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+          const bstr = atob(arr[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while(n--){
+              u8arr[n] = bstr.charCodeAt(n);
+          }
+          const blob = new Blob([u8arr], { type: mime });
+
+          const thumbPath = `${user.id}/${projectId}_thumb.png`;
+          await supabase.storage.from('Diagrams').upload(thumbPath, blob, { contentType: 'image/png', upsert: true });
+          const { data } = supabase.storage.from('Diagrams').getPublicUrl(thumbPath);
+          thumbUrl = `${data.publicUrl}?v=${Date.now()}`; // استفاده از ورژن برای دور زدن کش مرورگر
+        }
+      } catch (err) {
+        console.error('Thumbnail generation failed:', err);
+      }
+
       // آپلود در استوریج سوپابیس
       const { error: uploadError } = await supabase.storage.from('Diagrams').upload(filePath, jsonString, {
         contentType: 'application/json',
@@ -129,12 +159,14 @@ export const Toolbar: React.FC = () => {
 
       // دریافت لینک عمومی و بروزرسانی رکورد پروژه
       const { data: { publicUrl } } = supabase.storage.from('Diagrams').getPublicUrl(filePath);
-      const { error: dbError } = await supabase.from('projects').update({ file_url: publicUrl }).eq('id', projectId);
+      const updateData: any = { file_url: publicUrl };
+      if (thumbUrl) updateData.thumbnail_url = thumbUrl;
+      const { error: dbError } = await supabase.from('projects').update(updateData).eq('id', projectId);
       if (dbError) throw dbError;
 
     } catch (err) {
       console.error(err);
-      alert('خطا در ذخیره‌سازی پروژه در فضای ابری.');
+      alert('Failed to save project to the cloud.');
     } finally {
       setIsSaving(false);
     }
@@ -275,7 +307,7 @@ export const Toolbar: React.FC = () => {
       {projectId ? (
         <button onClick={handleCloudSave} disabled={isSaving} className={`flex items-center gap-2 px-4 py-2 cursor-pointer border rounded-md font-medium text-[13px] transition-all shadow-sm ${isSaving ? 'bg-slate-100 text-slate-400 border-slate-200' : 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600 hover:border-blue-600'}`}>
           {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} 
-          {isSaving ? 'در حال ذخیره...' : 'Save to Cloud'}
+        {isSaving ? 'Saving...' : 'Save to Cloud'}
         </button>
       ) : (
         <>
